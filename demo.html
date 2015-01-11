@@ -1,0 +1,67 @@
+<html>
+  <head>
+    <title>Indexed DB Example</title>
+    <link rel="import" href="polymer-idb.html">
+  </head>
+  <body>
+    <polymer-idb database="sample" version="1" object-store="bookmarks" key-path="url"></polymer-idb>
+    <script>
+      var idb = document.querySelector('polymer-idb');
+      idb.addEventListener('idb-ready', function() {
+        console.log('database ready');
+
+        // Bulk input of initial data
+        idb.putBulk([
+          {
+            "title":"Expressions - Polymer",
+            "url":"https://www.polymer-project.org/docs/polymer/expressions.html"
+          },
+          {
+            "title":"ProjectTabManager/package.json at master · agektmr/ProjectTabManager",
+            "url":"https://github.com/agektmr/ProjectTabManager/blob/master/package.json"
+          },
+          {
+            "title":"Polymer core elements - Polymer",
+            "url":"https://www.polymer-project.org/docs/elements/core-elements.html#core-collapse"
+          },
+          {
+            "title":"FAQ - Polymer",
+            "url":"https://www.polymer-project.org/resources/faq.html"
+          },
+          {
+            "title":"core-icons",
+            "url":"http://polymer.github.io/core-icons/components/core-icons/demo.html"
+          },
+          {
+            "title":"Material design with Polymer - Polymer",
+            "url":"https://www.polymer-project.org/docs/elements/material.html"
+          },
+          {
+            "title":"Project Tab Manager Mock",
+            "url":"chrome-extension://cobjaeieamiagdmcoopgilhjgjpfhgon/mock.html"
+          },
+          {
+            "title":"Tender Surrender",
+            "url":"http://localhost:8000/"
+          },
+          {
+            "title":"Chrome ウェブストア - アプリ",
+            "url":"https://chrome.google.com/webstore/detail/project-tab-manager/iapdnheekciiecjijobcglkcgeckpoia"
+          },
+          {
+            "title":"App Structure | Android Developers",
+            "url":"https://developer.android.com/design/patterns/app-structure.html"
+          }
+        ]).then(function() {
+          console.log('initial data saved');
+        });
+
+        // Getting data
+        idb.get('https://www.polymer-project.org/docs/elements/material.html').then(function(item) {
+          console.log('got data with a key of "https://www.polymer-project.org/docs/elements/material.html"', item);
+        });
+
+      });
+    </script>
+  </body>
+</html>

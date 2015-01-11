@@ -1,0 +1,25 @@
+{
+  "name": "polymer-idb",
+  "version": "0.1.0",
+  "authors": [
+    "Eiji Kitamura <agektmr+github@gmail.com>"
+  ],
+  "description": "Polymer Indexed DB element",
+  "main": "polymer-idb.html",
+  "keywords": [
+    "indexedDB",
+    "Polymer"
+  ],
+  "license": "Apache2.0",
+  "homepage": "http://github.com/agektmr/polymer-idb",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "~0.5.2"
+  }
+}
