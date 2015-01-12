@@ -8,12 +8,15 @@
     }
   </style>
   <script>
+    // Cache connetions to open database
     var database = {};
+
     // Use RSVP polyfill if Promise is not available
     var Promise = window.Promise || RSVP.Promise;
 
     Polymer('polymer-idb', {
       db: null,
+      ready: false,
       /**
        * opens database upon `ready` event
        * @return {void}
@@ -35,6 +38,7 @@
 
         // Open the database
         this.openDatabase().then(function() {
+          that.ready = true;
           that.fire('idb-ready');
         });
       },
