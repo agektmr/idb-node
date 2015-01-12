@@ -8,7 +8,8 @@
   "main": "polymer-idb.html",
   "keywords": [
     "indexedDB",
-    "Polymer"
+    "Polymer",
+    "Web Components"
   ],
   "license": "Apache2.0",
   "homepage": "http://github.com/agektmr/polymer-idb",
@@ -20,6 +21,7 @@
     "tests"
   ],
   "dependencies": {
-    "polymer": "~0.5.2"
+    "polymer": "~0.5.2",
+    "rsvp": "~3.0.16"
   }
 }

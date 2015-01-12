@@ -1,11 +1,23 @@
 <link rel="import" href="bower_components/polymer/polymer.html">
+<script src="bower_components/rsvp/rsvp.min.js"></script>
 
 <polymer-element name="polymer-idb" attributes="database version object-store key-path">
+  <style>
+    :host {
+      display: none;
+    }
+  </style>
   <script>
     var database = {};
+    // Use RSVP polyfill if Promise is not available
+    var Promise = window.Promise || RSVP.Promise;
 
     Polymer('polymer-idb', {
       db: null,
+      /**
+       * opens database upon `ready` event
+       * @return {void}
+       */
       ready: function() {
         var that = this;
 
@@ -26,6 +38,9 @@
           that.fire('idb-ready');
         });
       },
+      /**
+       * Use database with given name if already opened. Otherwise, open one.
+       */
       openDatabase: function() {
         var that = this;
         return new Promise(function(resolve, reject) {
@@ -56,17 +71,25 @@
           req.onupgradeneeded = function(e) {
             that.db = e.target.result;
             database[that.database] = that.db;
+            // TODO: Should we delete existing stores upon upgrade?
+            // Create object stores if they don't exist
             that.createObjectStore();
             resolve();
           };
         });
       },
+      /**
+       * Deletes database with given name
+       */
       deleteDatabase: function() {
         // Delete the database
         var req = window.indexedDB.deleteDatabase(this.database);
         that.db = undefined;
         delete database[this.database];
       },
+      /**
+       * Creates an object store if it doesn't exist
+       */
       createObjectStore: function() {
         // Does the object store exist?
         if (!this.db.objectStoreNames.contains(this['object-store'])) {
@@ -79,6 +102,9 @@
           this.db.createObjectStore(this['object-store'], keyPath);
         }
       },
+      /**
+       * Deletes an object store if exists
+       */
       deleteObjectStore: function() {
         // Does the object store exist?
         if (this.db.objectStoreNames.contains(this['object-store'])) {
@@ -86,6 +112,10 @@
           this.db.deleteObjectStore(this['object-store']);
         }
       },
+      /**
+       * Returns promise that contains IndexedDB transaction
+       * @return {Promise} Promise with idb transaction
+       */
       transaction: function() {
         var that = this;
         return new Promise(function(resolve, reject) {
@@ -93,6 +123,11 @@
           resolve(that.db.transaction(that['object-store'], 'readwrite'));
         });
       },
+      /**
+       * Puts a new object into the store
+       * @param  {Object} item An item to put into the store
+       * @return {Promise}     Promise with a result
+       */
       put: function(item) {
         var that = this;
         return new Promise(function(resolve, reject) {
@@ -107,6 +142,10 @@
           });
         });
       },
+      /**
+       * Puts an array of objects into the store
+       * @param {Array<Object>} items An array of objects to put into the store
+       */
       putBulk: function(items) {
         var that = this;
         return new Promise(function(resolve, reject) {
@@ -121,6 +160,11 @@
           });
         });
       },
+      /**
+       * Gets an item that matches given key
+       * @param  {String} key A key to store to search for
+       * @return {Promise}    Promise with a result
+       */
       get: function(key) {
         var that = this;
         return new Promise(function(resolve, reject) {
@@ -135,6 +179,11 @@
           })
         });
       },
+      /**
+       * Deletes an item that mactches given key
+       * @param  {String} key A key to database to delete
+       * @return {Promise}    Promise with a result
+       */
       delete: function(key) {
         var that = this;
         return new Promise(function(resolve, reject) {
@@ -149,6 +198,9 @@
           });
         })
       },
+      /**
+       * Gets all items in the store
+       */
       getAll: function() {
         var that = this;
         return new Promise(function(resolve, reject) {
@@ -173,6 +225,9 @@
           });
         });
       },
+      /**
+       * Delets all items in the store
+       */
       deleteAll: function() {
         var that = this;
         return new Promise(function(resolve, reject) {

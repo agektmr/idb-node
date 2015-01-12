@@ -9,16 +9,27 @@ $ bower install polymer-idb --save
 ```
 
 # Usage
+Load [`webcomponents.js`]()
+```
+<script src="bower_components/webcomponentsjs/webcomponents.min.js"></script>
+```
+
+Import `polymer-idb`
+```
+<link rel="import" href="bower_components/polymer-idb/polymer-idb.html">
+```
+
+Use this element with required attributes. Database and object stores will be created upon usage.
 ```
 <polymer-idb database="sample" version="1" object-store="bookmark" key-path="url"></polymer-idb>
 ```
 
 ## Attributes
 You need `polymer-idb` element with
-- `database`: Database name
-- `version`: Version number string
-- `object-store`: Object Store name
-- `key-path`: A key for the object store
+- `database` (required): Database name
+- `version` (required): Version number string
+- `object-store` (required): Object Store name
+- `key-path` (optional): A key for the object store
 
 ## Methods
 All methods return a promise
