@@ -16,7 +16,7 @@
 
     Polymer('polymer-idb', {
       db: null,
-      ready: false,
+      dbReady: false,
       /**
        * opens database upon `ready` event
        * @return {void}
@@ -38,7 +38,7 @@
 
         // Open the database
         this.openDatabase().then(function() {
-          that.ready = true;
+          that.dbReady = true;
           that.fire('idb-ready');
         });
       },
