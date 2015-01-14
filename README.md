@@ -3,10 +3,7 @@
 `polymer-idb` is a Polymer element that provides Indexed Database functionalities to Polymer.
 
 # Install
-
-```
-$ bower install polymer-idb --save
-```
+`git clone` this repository and install dependencies with `bower install`
 
 # Usage
 Load [`webcomponents.js`]()
