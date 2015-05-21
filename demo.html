@@ -5,11 +5,34 @@
     <link rel="import" href="idb-node.html">
   </head>
   <body>
-    <idb-node database="sample" version="1" object-store="bookmarks" key-path="url"></idb-node>
+      <idb-node id="db" database="idb-node-sample" version="1" object-store="bookmarks" key-path="url"></idb-node>
+      <template is="auto-binding" id="t">
+        <table>
+          <thead>
+            <tr>
+              <th>Title</th><th>Url</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template repeat="{{row in table}}">
+            <tr>
+              <td>{{row.title}}</td><td>{{row.url}}</td>
+            </tr>
+            </template>
+          </tbody>
+        </table>
+      </template>
     <script>
       var idb = document.querySelector('idb-node');
       idb.addEventListener('idb-ready', function() {
         console.log('database ready');
+
+        document.querySelector('#t').addEventListener('template-bound', function() {
+          var that = this;
+          this.$.db.getAll().then(function(data) {
+            that.table = data;
+          });
+        });
 
         // Bulk input of initial data
         idb.putBulk([
