@@ -21,7 +21,7 @@
        * opens database upon `ready` event
        * @return {void}
        */
-      ready: function() {
+      domReady: function() {
         var that = this;
 
         // Is indexedDB available?
@@ -78,7 +78,6 @@
             // TODO: Should we delete existing stores upon upgrade?
             // Create object stores if they don't exist
             that.createObjectStore();
-            resolve();
           };
         });
       },
@@ -88,7 +87,7 @@
       deleteDatabase: function() {
         // Delete the database
         var req = window.indexedDB.deleteDatabase(this.database);
-        that.db = undefined;
+        this.db = undefined;
         delete database[this.database];
       },
       /**
