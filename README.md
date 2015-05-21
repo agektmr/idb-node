@@ -1,6 +1,6 @@
-# polymer-idb
+# idb-node
 
-`polymer-idb` is a Polymer element that provides Indexed Database functionalities to Polymer.
+`idb-node` is a Polymer element that provides Indexed Database functionalities to Polymer.
 
 # Install
 `git clone` this repository and install dependencies with `bower install`
@@ -11,18 +11,18 @@ Load [`webcomponents.js`]()
 <script src="bower_components/webcomponentsjs/webcomponents.min.js"></script>
 ```
 
-Import `polymer-idb`
+Import `idb-node`
 ```
-<link rel="import" href="bower_components/polymer-idb/polymer-idb.html">
+<link rel="import" href="bower_components/idb-node/idb-node.html">
 ```
 
 Use this element with required attributes. Database and object stores will be created upon usage.
 ```
-<polymer-idb database="sample" version="1" object-store="bookmark" key-path="url"></polymer-idb>
+<idb-node database="sample" version="1" object-store="bookmark" key-path="url"></idb-node>
 ```
 
 ## Attributes
-You need `polymer-idb` element with
+You need `idb-node` element with
 - `database` (required): Database name
 - `version` (required): Version number string
 - `object-store` (required): Object Store name

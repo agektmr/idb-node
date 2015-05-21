@@ -2,12 +2,12 @@
   <head>
     <title>Indexed DB Example</title>
     <script src="bower_components/webcomponentsjs/webcomponents.min.js"></script>
-    <link rel="import" href="polymer-idb.html">
+    <link rel="import" href="idb-node.html">
   </head>
   <body>
-    <polymer-idb database="sample" version="1" object-store="bookmarks" key-path="url"></polymer-idb>
+    <idb-node database="sample" version="1" object-store="bookmarks" key-path="url"></idb-node>
     <script>
-      var idb = document.querySelector('polymer-idb');
+      var idb = document.querySelector('idb-node');
       idb.addEventListener('idb-ready', function() {
         console.log('database ready');
 

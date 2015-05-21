@@ -1,7 +1,7 @@
-<link rel="import" href="../polymer/polymer.html">
-<script src="../rsvp/rsvp.min.js"></script>
+<link rel="import" href="bower_components/polymer/polymer.html">
+<script src="bower_components/rsvp/rsvp.min.js"></script>
 
-<polymer-element name="polymer-idb" attributes="database version object-store key-path">
+<polymer-element name="idb-node" attributes="database version object-store key-path">
   <style>
     :host {
       display: none;
@@ -14,7 +14,7 @@
     // Use RSVP polyfill if Promise is not available
     var Promise = window.Promise || RSVP.Promise;
 
-    Polymer('polymer-idb', {
+    Polymer('idb-node', {
       db: null,
       dbReady: false,
       /**
@@ -32,7 +32,7 @@
 
         // Check if attributes are properly set
         if (!this.database || !this.version || !this['object-store']) {
-          console.error('You need to set `database`, `version` and `object-store` to enable `polymer-idb` element.');
+          console.error('You need to set `database`, `version` and `object-store` to enable `idb-node` element.');
           return;
         }
 
