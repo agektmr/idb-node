@@ -1,12 +1,12 @@
 <html>
   <head>
     <title>Indexed DB Example</title>
-    <script src="bower_components/webcomponentsjs/webcomponents.min.js"></script>
+    <script src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
     <link rel="import" href="idb-node.html">
   </head>
   <body>
       <idb-node id="db" database="idb-node-sample" version="1" object-store="bookmarks" key-path="url"></idb-node>
-      <template is="auto-binding" id="t">
+      <template is="dom-bind" id="t">
         <table>
           <thead>
             <tr>
@@ -14,9 +14,9 @@
             </tr>
           </thead>
           <tbody>
-            <template repeat="{{row in table}}">
+            <template is="dom-repeat" items="{{table}}">
             <tr>
-              <td>{{row.title}}</td><td>{{row.url}}</td>
+              <td>[[item.title]]</td><td>[[item.url]]</td>
             </tr>
             </template>
           </tbody>
@@ -27,7 +27,7 @@
       idb.addEventListener('idb-ready', function() {
         console.log('database ready');
 
-        document.querySelector('#t').addEventListener('template-bound', function() {
+        document.querySelector('#t').addEventListener('WebComponentsReady', function() {
           var that = this;
           this.$.db.getAll().then(function(data) {
             that.table = data;

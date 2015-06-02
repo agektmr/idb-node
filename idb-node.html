@@ -1,265 +1,277 @@
 <link rel="import" href="../polymer/polymer.html">
 <script src="../rsvp/rsvp.min.js"></script>
 
-<polymer-element name="idb-node" attributes="database version object-store key-path">
+<dom-module id="idb-node">
   <style>
     :host {
       display: none;
     }
   </style>
-  <script>
-    // Cache connetions to open database
-    var database = {};
+</dom-module>
+<script>
+  // Cache connetions to open database
+  var database = {};
 
-    // Use RSVP polyfill if Promise is not available
-    var Promise = window.Promise || RSVP.Promise;
+  // Use RSVP polyfill if Promise is not available
+  var Promise = window.Promise || RSVP.Promise;
 
-    Polymer('idb-node', {
-      db: null,
-      dbReady: false,
-      detached: function() {
-        this.db.close();
+  Polymer({
+    is: 'idb-node',
+    properties: {
+      database: {
+        type: String,
+        value: ''
       },
-      /**
-       * opens database upon `ready` event
-       * @return {void}
-       */
-      domReady: function() {
-        var that = this;
+      version: Number,
+      objectStore: {
+        type: Object,
+        value: ''
+      },
+      keyPath: {
+        type: String,
+        value: ''
+      },
+      db: Object,
+      dbReady: Boolean
+    },
+    detached: function() {
+      this.db.close();
+    },
+    ready: function() {
+      var that = this;
 
-        // Is indexedDB available?
-        if (!window.indexedDB) {
-          console.error('idb not available on this browser');
-          return;
-        }
-
-        // Check if attributes are properly set
-        if (!this.database || !this.version || !this['object-store']) {
-          console.error('You need to set `database`, `version` and `object-store` to enable `idb-node` element.');
-          return;
-        }
-
-        // Open the database
-        this.openDatabase().then(function() {
-          that.dbReady = true;
-          that.fire('idb-ready');
-        }, function() {
-          that.fire('idb-error');
-        });
-      },
-      /**
-       * Use database with given name if already opened. Otherwise, open one.
-       */
-      openDatabase: function() {
-        var that = this;
-        return new Promise(function(resolve, reject) {
-          // If the database is already open, use it
-          if (database[that.database]) {
-            that.db = database[that.database];
-            console.log('idb already open');
-            resolve();
-          }
-
-          // Otherwise, open it
-          var req = window.indexedDB.open(that.database, that.version);
-          req.onsuccess = function(e) {
-            that.db = e.target.result;
-            database[that.database] = that.db;
-            resolve();
-          };
-          req.onblocked = function(e) {
-            error = e;
-            console.error(e);
-            reject();
-          };
-          req.onerror = function(e) {
-            error = e;
-            console.error(e);
-            reject();
-          };
-          req.onupgradeneeded = function(e) {
-            that.db = e.target.result;
-            database[that.database] = that.db;
-            // TODO: Should we delete existing stores upon upgrade?
-            // Create object stores if they don't exist
-            that.createObjectStore();
-          };
-        });
-      },
-      /**
-       * Deletes database with given name
-       */
-      deleteDatabase: function() {
-        // Delete the database
-        var req = window.indexedDB.deleteDatabase(this.database);
-        this.db = undefined;
-        delete database[this.database];
-      },
-      /**
-       * Creates an object store if it doesn't exist
-       */
-      createObjectStore: function() {
-        // Does the object store exist?
-        if (!this.db.objectStoreNames.contains(this['object-store'])) {
-          var keyPath = null;
-          // If `key-path` is configured, set it as a key
-          if (this['key-path']) {
-            keyPath = {keyPath: this['key-path']};
-          }
-          // Create the object store
-          this.db.createObjectStore(this['object-store'], keyPath);
-        }
-      },
-      /**
-       * Deletes an object store if exists
-       */
-      deleteObjectStore: function() {
-        // Does the object store exist?
-        if (this.db.objectStoreNames.contains(this['object-store'])) {
-          // Delete the object store
-          this.db.deleteObjectStore(this['object-store']);
-        }
-      },
-      /**
-       * Returns promise that contains IndexedDB transaction
-       * @return {Promise} Promise with idb transaction
-       */
-      transaction: function() {
-        var that = this;
-        return new Promise(function(resolve, reject) {
-          // Return a transaction
-          resolve(that.db.transaction(that['object-store'], 'readwrite'));
-        });
-      },
-      /**
-       * Puts a new object into the store
-       * @param  {Object} item An item to put into the store
-       * @return {Promise}     Promise with a result
-       */
-      put: function(item) {
-        var that = this;
-        return new Promise(function(resolve, reject) {
-          that.transaction().then(function(trans) {
-            // Put an object
-            var req = trans.objectStore(that['object-store']).put(item);
-            req.onsuccess = function(e) {
-              resolve(e.target.result);
-            }
-            req.onerror = reject;
-            trans.onerror = reject;
-          });
-        });
-      },
-      /**
-       * Puts an array of objects into the store
-       * @param {Array<Object>} items An array of objects to put into the store
-       */
-      putBulk: function(items) {
-        var that = this;
-        return new Promise(function(resolve, reject) {
-          that.transaction().then(function(trans) {
-            var store = trans.objectStore(that['object-store']);
-            // Put objects in loop
-            for (var i = 0; i < items.length; i++) {
-              store.put(items[i]);
-            }
-            trans.oncomplete = resolve;
-            trans.onerror = reject;
-          });
-        });
-      },
-      /**
-       * Gets an item that matches given key
-       * @param  {String} key A key to store to search for
-       * @return {Promise}    Promise with a result
-       */
-      get: function(key) {
-        var that = this;
-        return new Promise(function(resolve, reject) {
-          that.transaction().then(function(trans) {
-            // Get an object with a key
-            var req = trans.objectStore(that['object-store']).get(key);
-            req.onsuccess = function(e) {
-              resolve(e.target.result);
-            }
-            req.onerror = reject;
-            trans.onerror = reject;
-          })
-        });
-      },
-      /**
-       * Deletes an item that mactches given key
-       * @param  {String} key A key to database to delete
-       * @return {Promise}    Promise with a result
-       */
-      delete: function(key) {
-        var that = this;
-        return new Promise(function(resolve, reject) {
-          that.transaction().then(function(trans) {
-            // Delete an object with a key
-            var req = trans.objectStore(that['object-store']).delete(key);
-            req.onsuccess = function(e) {
-              resolve(e.target.result);
-            }
-            req.onerror = reject;
-            trans.onerror = reject;
-          });
-        })
-      },
-      /**
-       * Gets all items in the store
-       */
-      getAll: function() {
-        var that = this;
-        return new Promise(function(resolve, reject) {
-          that.transaction().then(function(trans) {
-            var table = [];
-            // Open a cursor
-            var req = trans.objectStore(that['object-store']).openCursor();
-            req.onsuccess = function(e) {
-              // Loop through cursor to obtain results
-              var cursor = e.target.result;
-              if (cursor) {
-                table.push(cursor.value);
-                cursor.continue();
-              }
-            };
-            req.onerror = reject;
-            trans.oncomplete = function(e) {
-              // Finally resolve with all results
-              resolve(table);
-            };
-            trans.onerror = reject;
-          });
-        });
-      },
-      /**
-       * Delets all items in the store
-       */
-      deleteAll: function() {
-        var that = this;
-        return new Promise(function(resolve, reject) {
-          that.transaction().then(function(trans) {
-            var store = trans.objectStore(that['object-store']);
-            // Open a cursor
-            var req = store.openCursor();
-            req.onsuccess = function(e) {
-              // Loop through cursor to delete objects
-              var cursor = e.target.result;
-              if (cursor) {
-                store.delete(cursor.key);
-                cursor.continue();
-              }
-            };
-            req.onerror = reject;
-            trans.oncomplete = function(e) {
-              // Finally resolve with all results
-              resolve(e.target.result);
-            }
-            trans.onerror = reject;
-          })
-        });
+      // Is indexedDB available?
+      if (!window.indexedDB) {
+        console.error('idb not available on this browser');
+        return;
       }
-    });
-  </script>
-</polymer-element>
+
+      // Check if attributes are properly set
+      if (!this.database || !this.version || !this['objectStore']) {
+        console.error('You need to set `database`, `version` and `object-store` to enable `idb-node` element.');
+        return;
+      }
+
+      // Open the database
+      this.openDatabase().then(function() {
+        that.dbReady = true;
+        that.fire('idb-ready');
+      }, function() {
+        that.fire('idb-error');
+      });
+    },
+    /**
+     * Use database with given name if already opened. Otherwise, open one.
+     */
+    openDatabase: function() {
+      var that = this;
+      return new Promise(function(resolve, reject) {
+        // If the database is already open, use it
+        if (database[that.database]) {
+          that.db = database[that.database];
+          console.log('idb already open');
+          resolve();
+        }
+
+        // Otherwise, open it
+        var req = window.indexedDB.open(that.database, that.version);
+        req.onsuccess = function(e) {
+          that.db = e.target.result;
+          database[that.database] = that.db;
+          resolve();
+        };
+        req.onblocked = function(e) {
+          error = e;
+          console.error(e);
+          reject();
+        };
+        req.onerror = function(e) {
+          error = e;
+          console.error(e);
+          reject();
+        };
+        req.onupgradeneeded = function(e) {
+          that.db = e.target.result;
+          database[that.database] = that.db;
+          // TODO: Should we delete existing stores upon upgrade?
+          // Create object stores if they don't exist
+          that.createObjectStore();
+        };
+      });
+    },
+    /**
+     * Deletes database with given name
+     */
+    deleteDatabase: function() {
+      // Delete the database
+      var req = window.indexedDB.deleteDatabase(this.database);
+      this.db = undefined;
+      delete database[this.database];
+    },
+    /**
+     * Creates an object store if it doesn't exist
+     */
+    createObjectStore: function() {
+      // Does the object store exist?
+      if (!this.db.objectStoreNames.contains(this['objectStore'])) {
+        var keyPath = null;
+        // If `key-path` is configured, set it as a key
+        if (this['keyPath']) {
+          keyPath = {keyPath: this['keyPath']};
+        }
+        // Create the object store
+        this.db.createObjectStore(this['objectStore'], keyPath);
+      }
+    },
+    /**
+     * Deletes an object store if exists
+     */
+    deleteObjectStore: function() {
+      // Does the object store exist?
+      if (this.db.objectStoreNames.contains(this['objectStore'])) {
+        // Delete the object store
+        this.db.deleteObjectStore(this['objectStore']);
+      }
+    },
+    /**
+     * Returns promise that contains IndexedDB transaction
+     * @return {Promise} Promise with idb transaction
+     */
+    transaction: function() {
+      var that = this;
+      return new Promise(function(resolve, reject) {
+        // Return a transaction
+        resolve(that.db.transaction(that['objectStore'], 'readwrite'));
+      });
+    },
+    /**
+     * Puts a new object into the store
+     * @param  {Object} item An item to put into the store
+     * @return {Promise}     Promise with a result
+     */
+    put: function(item) {
+      var that = this;
+      return new Promise(function(resolve, reject) {
+        that.transaction().then(function(trans) {
+          // Put an object
+          var req = trans.objectStore(that['objectStore']).put(item);
+          req.onsuccess = function(e) {
+            resolve(e.target.result);
+          }
+          req.onerror = reject;
+          trans.onerror = reject;
+        });
+      });
+    },
+    /**
+     * Puts an array of objects into the store
+     * @param {Array<Object>} items An array of objects to put into the store
+     */
+    putBulk: function(items) {
+      var that = this;
+      return new Promise(function(resolve, reject) {
+        that.transaction().then(function(trans) {
+          var store = trans.objectStore(that['objectStore']);
+          // Put objects in loop
+          for (var i = 0; i < items.length; i++) {
+            store.put(items[i]);
+          }
+          trans.oncomplete = resolve;
+          trans.onerror = reject;
+        });
+      });
+    },
+    /**
+     * Gets an item that matches given key
+     * @param  {String} key A key to store to search for
+     * @return {Promise}    Promise with a result
+     */
+    get: function(key) {
+      var that = this;
+      return new Promise(function(resolve, reject) {
+        that.transaction().then(function(trans) {
+          // Get an object with a key
+          var req = trans.objectStore(that['objectStore']).get(key);
+          req.onsuccess = function(e) {
+            resolve(e.target.result);
+          }
+          req.onerror = reject;
+          trans.onerror = reject;
+        })
+      });
+    },
+    /**
+     * Deletes an item that mactches given key
+     * @param  {String} key A key to database to delete
+     * @return {Promise}    Promise with a result
+     */
+    delete: function(key) {
+      var that = this;
+      return new Promise(function(resolve, reject) {
+        that.transaction().then(function(trans) {
+          // Delete an object with a key
+          var req = trans.objectStore(that['objectStore']).delete(key);
+          req.onsuccess = function(e) {
+            resolve(e.target.result);
+          }
+          req.onerror = reject;
+          trans.onerror = reject;
+        });
+      })
+    },
+    /**
+     * Gets all items in the store
+     */
+    getAll: function() {
+      var that = this;
+      return new Promise(function(resolve, reject) {
+        that.transaction().then(function(trans) {
+          var table = [];
+          // Open a cursor
+          var req = trans.objectStore(that['objectStore']).openCursor();
+          req.onsuccess = function(e) {
+            // Loop through cursor to obtain results
+            var cursor = e.target.result;
+            if (cursor) {
+              table.push(cursor.value);
+              cursor.continue();
+            }
+          };
+          req.onerror = reject;
+          trans.oncomplete = function(e) {
+            // Finally resolve with all results
+            resolve(table);
+          };
+          trans.onerror = reject;
+        });
+      });
+    },
+    /**
+     * Delets all items in the store
+     */
+    deleteAll: function() {
+      var that = this;
+      return new Promise(function(resolve, reject) {
+        that.transaction().then(function(trans) {
+          var store = trans.objectStore(that['objectStore']);
+          // Open a cursor
+          var req = store.openCursor();
+          req.onsuccess = function(e) {
+            // Loop through cursor to delete objects
+            var cursor = e.target.result;
+            if (cursor) {
+              store.delete(cursor.key);
+              cursor.continue();
+            }
+          };
+          req.onerror = reject;
+          trans.oncomplete = function(e) {
+            // Finally resolve with all results
+            resolve(e.target.result);
+          }
+          trans.onerror = reject;
+        })
+      });
+    }
+  });
+</script>

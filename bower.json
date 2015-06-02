@@ -1,6 +1,6 @@
 {
   "name": "idb-node",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "authors": [
     "Eiji Kitamura <agektmr+github@gmail.com>"
   ],
@@ -21,7 +21,7 @@
     "tests"
   ],
   "dependencies": {
-    "polymer": "^0.5.6",
-    "rsvp": "~3.0.16"
+    "rsvp": "~3.0.16",
+    "polymer": "~1.0.2"
   }
 }
