@@ -21,7 +21,7 @@
     "tests"
   ],
   "dependencies": {
-    "rsvp": "~3.0.16",
-    "polymer": "~1.0.2"
+    "polymer": "~1.0.2",
+    "promise-polyfill": "~2.0.2"
   }
 }

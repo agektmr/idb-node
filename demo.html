@@ -27,7 +27,7 @@
       idb.addEventListener('idb-ready', function() {
         console.log('database ready');
 
-        document.querySelector('#t').addEventListener('WebComponentsReady', function() {
+        document.querySelector('#t').addEventListener('ready', function() {
           var that = this;
           this.$.db.getAll().then(function(data) {
             that.table = data;
