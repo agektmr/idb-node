@@ -5,33 +5,31 @@
     <link rel="import" href="idb-node.html">
   </head>
   <body>
-      <idb-node id="db" database="idb-node-sample" version="1" object-store="bookmarks" key-path="url"></idb-node>
-      <template is="dom-bind" id="t">
-        <table>
-          <thead>
-            <tr>
-              <th>Title</th><th>Url</th>
-            </tr>
-          </thead>
-          <tbody>
-            <template is="dom-repeat" items="{{table}}">
-            <tr>
-              <td>[[item.title]]</td><td>[[item.url]]</td>
-            </tr>
-            </template>
-          </tbody>
-        </table>
-      </template>
+    <idb-node id="db" database="idb-node-sample" version="1" object-store="bookmarks" key-path="url"></idb-node>
+    <template is="dom-bind" id="t">
+      <table>
+        <thead>
+          <tr>
+            <th>Title</th><th>Url</th>
+          </tr>
+        </thead>
+        <tbody>
+          <template is="dom-repeat" items="{{table}}">
+          <tr>
+            <td>[[item.title]]</td><td>[[item.url]]</td>
+          </tr>
+          </template>
+        </tbody>
+      </table>
+    </template>
     <script>
       var idb = document.querySelector('idb-node');
       idb.addEventListener('idb-ready', function() {
         console.log('database ready');
 
-        document.querySelector('#t').addEventListener('ready', function() {
-          var that = this;
-          this.$.db.getAll().then(function(data) {
-            that.table = data;
-          });
+        var db = document.querySelector('#db');
+        db.getAll().then(function(data) {
+          document.querySelector('#t').table = data;
         });
 
         // Bulk input of initial data
