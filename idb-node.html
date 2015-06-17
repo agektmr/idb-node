@@ -1,4 +1,5 @@
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-meta/iron-meta.html">
 <link rel="import" href="../promise-polyfill/promise-polyfill-lite.html">
 
 <dom-module id="idb-node">
@@ -15,7 +16,7 @@
   Polymer({
     is: 'idb-node',
     properties: {
-      database: {
+      databaseName: {
         type: String,
         value: ''
       },
@@ -28,8 +29,18 @@
         type: String,
         value: ''
       },
-      db: Object,
-      dbReady: Boolean
+      db: {
+        type: Object,
+        value: {}
+      },
+      dbReady: {
+        type: Boolean,
+        value: false
+      },
+      metaName: {
+        type: String,
+        value: ''
+      }
     },
     detached: function() {
       this.db.close();
@@ -44,10 +55,14 @@
       }
 
       // Check if attributes are properly set
-      if (!this.database || !this.version || !this['objectStore']) {
-        console.error('You need to set `database`, `version` and `object-store` to enable `idb-node` element.');
+      if (!this.databaseName || !this.version || !this['objectStore']) {
+        console.error('You need to set `database-name`, `version` and `object-store` to enable `idb-node` element.');
         return;
       }
+
+      // Register to iron-meta
+      this.metaName = this.databaseName + '-' + this.objectStore;
+      new Polymer.IronMeta({type: 'idb', key: this.metaName, value: this});
 
       // Open the database
       this.openDatabase().then(function() {
@@ -64,17 +79,17 @@
       var that = this;
       return new Promise(function(resolve, reject) {
         // If the database is already open, use it
-        if (database[that.database]) {
-          that.db = database[that.database];
+        if (database[that.databaseName]) {
+          that.db = database[that.databaseName];
           console.log('idb already open');
           resolve();
         }
 
         // Otherwise, open it
-        var req = window.indexedDB.open(that.database, that.version);
+        var req = window.indexedDB.open(that.databaseName, that.version);
         req.onsuccess = function(e) {
           that.db = e.target.result;
-          database[that.database] = that.db;
+          database[that.databaseName] = that.db;
           resolve();
         };
         req.onblocked = function(e) {
@@ -89,7 +104,7 @@
         };
         req.onupgradeneeded = function(e) {
           that.db = e.target.result;
-          database[that.database] = that.db;
+          database[that.databaseName] = that.db;
           // TODO: Should we delete existing stores upon upgrade?
           // Create object stores if they don't exist
           that.createObjectStore();
@@ -101,9 +116,9 @@
      */
     deleteDatabase: function() {
       // Delete the database
-      var req = window.indexedDB.deleteDatabase(this.database);
+      var req = window.indexedDB.deleteDatabase(this.databaseName);
       this.db = undefined;
-      delete database[this.database];
+      delete database[this.databaseName];
     },
     /**
      * Creates an object store if it doesn't exist
