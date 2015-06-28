@@ -2,13 +2,16 @@
 
 `idb-node` is a Polymer element that provides Indexed Database functionalities to Polymer.
 
+- Provided with Monolithic Pattern using `iron-meta`
+- DB access will be gracefully deferred using Promise when it's not ready
+
 # Install
 `git clone` this repository and install dependencies with `bower install`
 
 # Usage
 Load [`webcomponents.js`]()
 ```html
-<script src="bower_components/webcomponentsjs/webcomponents.min.js"></script>
+<script src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
 ```
 
 Import `idb-node`
@@ -39,6 +42,7 @@ All methods return a promise
 
 ## Events
 - `idb-ready`: Fired when the database is ready to use
+- `idb-error`: Fired when there's something wrong with idb
 
 ## Iron Meta
 You can access database via [`iron-meta`](https://github.com/PolymerElements/iron-meta). `iron-meta` allows you to open database using monostate pattern. This is useful when you have many different instance of elements that access to a single database.
@@ -46,8 +50,6 @@ You can access database via [`iron-meta`](https://github.com/PolymerElements/iro
 - Get access to the element.
 - You can obtain database instance with `byKey()` method.
 - The key is constructed using database name + '-' + object store name.
-
-**Make sure that database is ready before accessing it. You can use `idb-ready` event `idb-node` emits.**
 
 demo.html
 ```html
@@ -76,11 +78,6 @@ icon-elem.html
     },
     ready: function() {
       this.db = this.$.meta.byKey('demo-icons');
-      if (this.db.dbReady) {
-        this.readDb();
-      } else {
-        this.db.addEventListener('idb-ready', readDb.bind(this));
-      }
     },
     readDb: function() {
       this.db.get(function() {
