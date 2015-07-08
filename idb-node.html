@@ -157,8 +157,10 @@
     transaction: function() {
       var that = this;
       return new Promise(function(resolve, reject) {
-        // Return a transaction
-        resolve(that.db.transaction(that['objectStore'], 'readwrite'));
+        that.isReady.then(function() {
+          // Return a transaction
+          resolve(that.db.transaction(that['objectStore'], 'readwrite'));
+        });
       });
     },
     /**
@@ -168,17 +170,15 @@
      */
     put: function(item) {
       var that = this;
-      return this.isReady.then(function() {
-        return new Promise(function(resolve, reject) {
-          that.transaction().then(function(trans) {
-            // Put an object
-            var req = trans.objectStore(that['objectStore']).put(item);
-            req.onsuccess = function(e) {
-              resolve(e.target.result);
-            }
-            req.onerror = reject;
-            trans.onerror = reject;
-          });
+      return new Promise(function(resolve, reject) {
+        that.transaction().then(function(trans) {
+          // Put an object
+          var req = trans.objectStore(that['objectStore']).put(item);
+          req.onsuccess = function(e) {
+            resolve(e.target.result);
+          }
+          req.onerror = reject;
+          trans.onerror = reject;
         });
       });
     },
@@ -188,17 +188,15 @@
      */
     putBulk: function(items) {
       var that = this;
-      return this.isReady.then(function(resolve, reject) {
-        return new Promise(function(resolve, reject) {
-          that.transaction().then(function(trans) {
-            var store = trans.objectStore(that['objectStore']);
-            // Put objects in loop
-            for (var i = 0; i < items.length; i++) {
-              store.put(items[i]);
-            }
-            trans.oncomplete = resolve;
-            trans.onerror = reject;
-          });
+      return new Promise(function(resolve, reject) {
+        that.transaction().then(function(trans) {
+          var store = trans.objectStore(that['objectStore']);
+          // Put objects in loop
+          for (var i = 0; i < items.length; i++) {
+            store.put(items[i]);
+          }
+          trans.oncomplete = resolve;
+          trans.onerror = reject;
         });
       });
     },
@@ -209,17 +207,15 @@
      */
     get: function(key) {
       var that = this;
-      return this.isReady.then(function() {
-        return new Promise(function(resolve, reject) {
-          that.transaction().then(function(trans) {
-            // Get an object with a key
-            var req = trans.objectStore(that['objectStore']).get(key);
-            req.onsuccess = function(e) {
-              resolve(e.target.result);
-            }
-            req.onerror = reject;
-            trans.onerror = reject;
-          });
+      return new Promise(function(resolve, reject) {
+        that.transaction().then(function(trans) {
+          // Get an object with a key
+          var req = trans.objectStore(that['objectStore']).get(key);
+          req.onsuccess = function(e) {
+            resolve(e.target.result);
+          }
+          req.onerror = reject;
+          trans.onerror = reject;
         });
       });
     },
@@ -230,17 +226,15 @@
      */
     delete: function(key) {
       var that = this;
-      return this.isReady.then(function() {
-        return new Promise(function(resolve, reject) {
-          that.transaction().then(function(trans) {
-            // Delete an object with a key
-            var req = trans.objectStore(that['objectStore']).delete(key);
-            req.onsuccess = function(e) {
-              resolve(e.target.result);
-            }
-            req.onerror = reject;
-            trans.onerror = reject;
-          });
+      return new Promise(function(resolve, reject) {
+        that.transaction().then(function(trans) {
+          // Delete an object with a key
+          var req = trans.objectStore(that['objectStore']).delete(key);
+          req.onsuccess = function(e) {
+            resolve(e.target.result);
+          }
+          req.onerror = reject;
+          trans.onerror = reject;
         });
       });
     },
@@ -249,27 +243,25 @@
      */
     getAll: function() {
       var that = this;
-      return this.isReady.then(function() {
-        return new Promise(function(resolve, reject) {
-          that.transaction().then(function(trans) {
-            var table = [];
-            // Open a cursor
-            var req = trans.objectStore(that['objectStore']).openCursor();
-            req.onsuccess = function(e) {
-              // Loop through cursor to obtain results
-              var cursor = e.target.result;
-              if (cursor) {
-                table.push(cursor.value);
-                cursor.continue();
-              }
-            };
-            req.onerror = reject;
-            trans.oncomplete = function(e) {
-              // Finally resolve with all results
-              resolve(table);
-            };
-            trans.onerror = reject;
-          });
+      return new Promise(function(resolve, reject) {
+        that.transaction().then(function(trans) {
+          var table = [];
+          // Open a cursor
+          var req = trans.objectStore(that['objectStore']).openCursor();
+          req.onsuccess = function(e) {
+            // Loop through cursor to obtain results
+            var cursor = e.target.result;
+            if (cursor) {
+              table.push(cursor.value);
+              cursor.continue();
+            }
+          };
+          req.onerror = reject;
+          trans.oncomplete = function(e) {
+            // Finally resolve with all results
+            resolve(table);
+          };
+          trans.onerror = reject;
         });
       });
     },
@@ -278,28 +270,26 @@
      */
     deleteAll: function() {
       var that = this;
-      return this.isReady.then(function() {
-        return new Promise(function(resolve, reject) {
-          that.transaction().then(function(trans) {
-            var store = trans.objectStore(that['objectStore']);
-            // Open a cursor
-            var req = store.openCursor();
-            req.onsuccess = function(e) {
-              // Loop through cursor to delete objects
-              var cursor = e.target.result;
-              if (cursor) {
-                store.delete(cursor.key);
-                cursor.continue();
-              }
-            };
-            req.onerror = reject;
-            trans.oncomplete = function(e) {
-              // Finally resolve with all results
-              resolve(e.target.result);
+      return new Promise(function(resolve, reject) {
+        that.transaction().then(function(trans) {
+          var store = trans.objectStore(that['objectStore']);
+          // Open a cursor
+          var req = store.openCursor();
+          req.onsuccess = function(e) {
+            // Loop through cursor to delete objects
+            var cursor = e.target.result;
+            if (cursor) {
+              store.delete(cursor.key);
+              cursor.continue();
             }
-            trans.onerror = reject;
-          })
-        });
+          };
+          req.onerror = reject;
+          trans.oncomplete = function(e) {
+            // Finally resolve with all results
+            resolve(e.target.result);
+          }
+          trans.onerror = reject;
+        })
       });
     }
   });
