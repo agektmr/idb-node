@@ -2,7 +2,7 @@
 
 `idb-node` is a Polymer element that provides Indexed Database functionalities to Polymer.
 
-- Provided with Monolithic Pattern using `iron-meta`
+- Provided with Monostate Pattern using `iron-meta`
 - DB access will be gracefully deferred using Promise when it's not ready
 
 # Install
