@@ -1,6 +1,6 @@
 {
   "name": "idb-node",
-  "version": "0.5.0",
+  "version": "0.5.2",
   "authors": [
     "Eiji Kitamura <agektmr+github@gmail.com>"
   ],
@@ -21,8 +21,6 @@
     "tests"
   ],
   "dependencies": {
-    "polymer": "~1.0.2",
-    "promise-polyfill": "git@github.com:PolymerLabs/promise-polyfill.git",
-    "iron-meta": "PolymerElements/iron-meta#~1.0.1"
+    "iron-meta": "PolymerElements/iron-meta#^1.1.1"
   }
 }
